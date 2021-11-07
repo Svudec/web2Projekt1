@@ -1,1 +1,71 @@
-<h1>Ovo radi</h1>
+<h3>Zadnje prijave:</h3>
+<div id="usersHistoryList">
+</div>
+
+<script>
+    //LOCATE USER
+        const status = document.querySelector('#status');
+
+      function success(position) {
+        const latitude  = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        const userName = "{{user.name}}";
+        const time = position.timestamp;
+
+        status.textContent = 'Vaša lokacija je (zemljopisna širina : zemljopisna dužina): ( ' + 
+                            latitude + ' : ' + longitude + ' )';
+        
+        map.setView({lon: longitude, lat: latitude}, 12);
+
+        //send login information to server
+        fetch('/saveLocation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            mode: "cors",
+            cache: 'no-cache',
+            credentials:"include",
+            body: JSON.stringify({
+                user: {
+                    name: userName,
+                    longitude: longitude,
+                    latitude: latitude,
+                    time: time
+                }
+            })
+        }).then(r =>
+        //render last 5 logins
+            r.json().then(res => {
+                let list = document.getElementById("usersHistoryList");
+                res.forEach(record => {
+
+                    let date = new Date(record.time);
+                    let userString = `Korisnik: ${record.name}`;
+                    let dateString = `Vrijeme prijave: ${date.getDate()}.${date.getMonth()+1}.${date.getFullYear()}. ${date.getHours()}:${date.getMinutes()}`;
+                    // show a markers on the map
+                    L.marker({lon: record.longitude, lat: record.latitude}).bindPopup(userString + '\n' + dateString).addTo(map);
+                    //add to list
+                    let textItem1 = document.createTextNode(userString);
+                    let textItem2 = document.createTextNode(dateString);
+                    let brItem = document.createElement("br");
+                    list.appendChild(textItem1);
+                    list.appendChild(brItem);
+                    list.appendChild(textItem2);
+                    list.appendChild(brItem.cloneNode());
+                    list.appendChild(brItem.cloneNode());
+                });
+            }));
+      }
+
+      function error() {
+        status.textContent = 'Lociranje nije uspjelo :(';
+      }
+
+      if(!navigator.geolocation) {
+        status.textContent = 'Vaš preglednik ne podržava Geolokaciju :(';
+      } else {
+        status.textContent = 'Lociranje…';
+        navigator.geolocation.getCurrentPosition(success, error);
+      }
+  </script>

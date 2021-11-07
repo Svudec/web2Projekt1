@@ -5,6 +5,8 @@ var https = require('https');
 
 
 const app = express();
+//array to save recent logins
+const history = [];
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -29,25 +31,55 @@ const config = {
      },
   };
 app.use(auth(config));
+app.use(express.json());
+app.use(express.urlencoded());
 
+//homescreen
 app.get('/',  function (req, res) {
     req.user = {
         isAuthenticated : req.oidc.isAuthenticated()
     };
+    //redirect if logged in
     if (req.user.isAuthenticated) {
         req.user.name = req.oidc.user.name;
+        res.redirect('/history')
+    } else {
+        res.render("empty", {user: req.user});
     }
-    res.render("empty", {user: req.user});
 });
 
+//protected endpoint for logged in users
 app.get('/history', requiresAuth(), function (req, res) {
     req.user = {
         isAuthenticated : req.oidc.isAuthenticated()
     };
     if (req.user.isAuthenticated) {
         req.user.name = req.oidc.user.name;
-    }         
+    }
     res.render("history", {user: req.user});
+});
+
+//endpoint to save login data to server
+app.post('/saveLocation', function(req, res){
+    const newLoginUser = req.body.user;
+
+    const oldUserRecord = history.find( ({ name }) => name === newLoginUser.name );
+    if(oldUserRecord){
+        oldUserRecord.time = newLoginUser.time;
+        oldUserRecord.longitude = newLoginUser.longitude;
+        oldUserRecord.latitude = newLoginUser.latitude;
+    } else {
+        if(history.length > 4){
+            history.pop();
+        }
+        history.push(newLoginUser)
+    }
+    history.sort((a, b) => b.time - a.time);
+    res.json(history);
+});
+
+app.get('/logout', requiresAuth(), function(req, res) {
+    res.oidc.logout({returnTo: '/'});
 });
 
 https.createServer({
@@ -57,7 +89,3 @@ https.createServer({
   .listen(port, () => 
     console.log(`Server running at https://localhost:${port}/`)
 );
-
-// app.listen(port, () => {
-//     console.log(`Server running at http://localhost:${port}`)
-//   })

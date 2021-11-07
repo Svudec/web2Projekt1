@@ -1,1 +1,26 @@
-<html></html>
+<script>
+    //LOCATE USER
+        const status = document.querySelector('#status');
+
+      function success(position) {
+        const latitude  = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        status.textContent = 'Vaša lokacija je (zemljopisna širina : zemljopisna dužina): ( ' + 
+                            latitude + ' : ' + longitude + ' )';
+        // show a marker on the map
+        L.marker({lon: longitude, lat: latitude}).bindPopup('Vaša lokacija').addTo(map);
+        map.setView({lon: longitude, lat: latitude}, 12)
+      }
+
+      function error() {
+        status.textContent = 'Lociranje nije uspjelo :(';
+      }
+
+      if(!navigator.geolocation) {
+        status.textContent = 'Vaš preglednik ne podržava Geolokaciju :(';
+      } else {
+        status.textContent = 'Lociranje…';
+        navigator.geolocation.getCurrentPosition(success, error);
+      }
+  </script>
