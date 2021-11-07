@@ -13,6 +13,10 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "express-handlebars": "^5.3.4"
+    "express-handlebars": "^5.3.4",
+    "https": "^1.0.0",
+    "fs": "0.0.1-security",
+    "dotenv": "^10.0.0",
+    "express-openid-connect": "^2.5.1"
   }
 }
