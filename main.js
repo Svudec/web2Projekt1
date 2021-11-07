@@ -37,13 +37,17 @@ app.get('/',  function (req, res) {
     if (req.user.isAuthenticated) {
         req.user.name = req.oidc.user.name;
     }
-    console.log(req.user);
-    res.render('index', {layout: false});
+    res.render("empty", {user: req.user});
 });
 
 app.get('/history', requiresAuth(), function (req, res) {
-    console.log(req.user);         
-    res.render('index', {layout: false});
+    req.user = {
+        isAuthenticated : req.oidc.isAuthenticated()
+    };
+    if (req.user.isAuthenticated) {
+        req.user.name = req.oidc.user.name;
+    }         
+    res.render("history", {user: req.user});
 });
 
 https.createServer({

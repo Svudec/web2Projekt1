@@ -18,9 +18,18 @@
         padding: 0;
         margin: 0;
       }
+    #content {
+        height: 100%;
+        width: 100%;
+    }
     #map {
-        height: 95%;
-        width: 80%;
+        height: 100%;
+        width: 69%;
+        float: left;
+    }
+    #history {
+      width: 28%;
+      float: right;
     }
     #statusDiv {
       width: 100%;
@@ -46,7 +55,12 @@
       <input type="submit" value="Prijavi se" />
     </form>
   </div>
-  <div id='map'></div>
+  <div id='content'>
+    <div id='map'></div>
+    <div id='history'>
+      {{{body}}}
+    </div>
+  </div>
 
   <script>
     //INIT MAP
