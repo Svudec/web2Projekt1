@@ -16,13 +16,13 @@ app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 
 const { auth, requiresAuth } = require('express-openid-connect');
-const port = 4040;
+const port = process.env.PORT || 4040;
 
 const config = { 
     authRequired : false,
     idpLogout : true,
     secret: process.env.SECRET,
-    baseURL: `https://localhost:${port}`,
+    baseURL: process.env.APP_URL || `https://localhost:${port}`,
     clientID: process.env.CLIENT_ID,
     issuerBaseURL: 'https://ks-web2-projekt1.eu.auth0.com',
     clientSecret: process.env.CLIENT_SECRET,
@@ -82,10 +82,17 @@ app.get('/logout', requiresAuth(), function(req, res) {
     res.oidc.logout({returnTo: '/'});
 });
 
-https.createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-  }, app)
-  .listen(port, () => 
-    console.log(`Server running at https://localhost:${port}/`)
-);
+//run http if deployed, else https
+if(process.env.PORT){
+    app.listen(port, () => 
+    console.log(`Server running at ${process.env.APP_URL}`)
+    );
+} else {
+    https.createServer({
+        key: fs.readFileSync('server.key'),
+        cert: fs.readFileSync('server.cert')
+      }, app)
+      .listen(port, () => 
+        console.log(`Server running at https://localhost:${port}/`)
+    );
+}
